@@ -1,3 +1,6 @@
 [submodule "dependencies/harfbuzz"]
 	path = dependencies/harfbuzz
 	url = https://github.com/native-toolkit/harfbuzz.git
+[submodule "dependencies/freetype"]
+	path = dependencies/freetype
+	url = https://github.com/native-toolkit/freetype.git

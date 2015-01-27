@@ -1,0 +1,39 @@
+<xml>
+	
+	<include name="${HXCPP}/build-tool/BuildCommon.xml"/>
+	
+	<set name="NATIVE_TOOLKIT_PATH" value="../dependencies" />
+	<include name="${NATIVE_TOOLKIT_PATH}/freetype/files.xml" />
+
+	<files id="common">
+
+		<compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/include"/>
+		<compilerflag value="-Iinclude" />
+		
+		<file name="common/ExternalInterface.cpp"/>
+		<file name="common/openfl-harfbuzz.cpp"/>
+		
+	</files>
+
+	<set name="SLIBEXT" value=".lib" if="windows"/>
+	<set name="SLIBEXT" value=".a" unless="windows"/>
+	<set name="SLIBEXT" value=".so" if="webos"/>
+	
+	<set name="DEBUGEXTRA" value="-debug" if="fulldebug" />
+	
+	<target id="NDLL" output="${LIBPREFIX}openfl_harfbuzz${MSVC_LIB_VERSION}${DEBUGEXTRA}${LIBEXTRA}" tool="linker" toolid="${STD_MODULE_LINK}">
+		
+		<outdir name="../ndll/${BINDIR}"/>
+		<ext value=".ndll" if="windows || macos || linux" />
+		<files id="common"/>
+		<files id="native-toolkit-freetype" />
+		
+	</target>
+	
+	<target id="default">
+		
+		<target id="NDLL"/>
+		
+	</target>
+
+</xml>

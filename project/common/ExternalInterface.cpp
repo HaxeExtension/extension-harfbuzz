@@ -8,14 +8,27 @@
 
 
 #include <hx/CFFI.h>
-#include "Utils.h"
+#include "openfl-harfbuzz.h"
 
 using namespace openfl_harfbuzz;
 
 static value openfl_harfbuzz_init() {
 	init();
+	return alloc_null();
 }
 DEFINE_PRIM(openfl_harfbuzz_init, 0);
+
+static value openfl_harfbuzz_loadFontFaceFromFile(value filePath, value faceIndex) {
+	bool ret = loadFontFaceFromFile(val_string(filePath), val_int(faceIndex));
+	return alloc_bool(ret);
+}
+DEFINE_PRIM(openfl_harfbuzz_loadFontFaceFromFile, 2);
+
+static value openfl_harfbuzz_setFontSize(value size) {
+	setFontSize(val_int(size));
+	return alloc_null();
+}
+DEFINE_PRIM(openfl_harfbuzz_setFontSize, 1);
 
 extern "C" void openfl_harfbuzz_main () {
 	

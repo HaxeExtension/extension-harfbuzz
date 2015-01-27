@@ -1,0 +1,3 @@
+[submodule "dependencies/harfbuzz"]
+	path = dependencies/harfbuzz
+	url = https://github.com/native-toolkit/harfbuzz.git

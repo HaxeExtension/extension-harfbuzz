@@ -20,7 +20,6 @@ namespace openfl_harfbuzz {
 		if (error!=FT_Err_Ok) {
 			throw "Error initializing FreeType";
 		}
-		printf("Harbuzz init: %lu\n", (unsigned long)&library);
 	}
 
 	/**

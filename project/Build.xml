@@ -4,10 +4,12 @@
 	
 	<set name="NATIVE_TOOLKIT_PATH" value="../dependencies" />
 	<include name="${NATIVE_TOOLKIT_PATH}/freetype/files.xml" />
+	<include name="${NATIVE_TOOLKIT_PATH}/harfbuzz/files.xml" />
 
 	<files id="common">
 
 		<compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/include"/>
+		<compilerflag value="-I${NATIVE_TOOLKIT_PATH}/harfbuzz/include"/>
 		<compilerflag value="-Iinclude" />
 		
 		<file name="common/ExternalInterface.cpp"/>
@@ -27,6 +29,7 @@
 		<ext value=".ndll" if="windows || macos || linux" />
 		<files id="common"/>
 		<files id="native-toolkit-freetype" />
+		<files id="native-toolkit-harfbuzz" />
 		
 	</target>
 	

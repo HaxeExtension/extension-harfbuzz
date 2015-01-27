@@ -9,7 +9,7 @@
 	<files id="common">
 
 		<compilerflag value="-I${NATIVE_TOOLKIT_PATH}/freetype/include"/>
-		<compilerflag value="-I${NATIVE_TOOLKIT_PATH}/harfbuzz/include"/>
+		<compilerflag value="-I${NATIVE_TOOLKIT_PATH}/harfbuzz/src"/>
 		<compilerflag value="-Iinclude" />
 		
 		<file name="common/ExternalInterface.cpp"/>

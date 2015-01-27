@@ -30,6 +30,20 @@ static value openfl_harfbuzz_setFontSize(value size) {
 }
 DEFINE_PRIM(openfl_harfbuzz_setFontSize, 1);
 
+void openfl_harfbuzz_destroyBuffer(value handle) {
+	printf("destructor\n");
+	hb_buffer_t *buffer = (hb_buffer_t *)(intptr_t)val_float(handle);
+	destroyBuffer(buffer);
+}
+
+static value openfl_harfbuzz_createBuffer(value direction, value script, value language) {
+	hb_buffer_t *buffer = createBuffer(val_int(direction), val_string(script), val_string(language));
+	value v = alloc_float((intptr_t)buffer);
+	val_gc(v, openfl_harfbuzz_destroyBuffer);
+	return v;
+}
+DEFINE_PRIM(openfl_harfbuzz_createBuffer, 3);
+
 extern "C" void openfl_harfbuzz_main () {
 	
 	val_int(0); // Fix Neko init

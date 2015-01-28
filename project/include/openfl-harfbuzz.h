@@ -2,14 +2,17 @@
 #define OPENFL_HARFBUZZ_H
 
 #include <hb.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 namespace openfl_harfbuzz {
 	
 	void init();
-	bool loadFontFaceFromFile(const char *filePath, int faceIndex);
-	void setFontSize(int size);
-	hb_buffer_t *createBuffer(hb_tag_t direction, const char *script, const char *language);
+	FT_Face *loadFontFaceFromFile(const char *filePath, int faceIndex);
+	void setFontSize(FT_Face *face, int size);
+	hb_buffer_t *createBuffer(hb_tag_t direction, const char *script, const char *language, const char *text);
 	void destroyBuffer(hb_buffer_t *buffer);
+	void loadGlyphsForBuffer(FT_Face *face, hb_buffer_t *buffer);
 	
 }
 

@@ -19,30 +19,40 @@ static value openfl_harfbuzz_init() {
 DEFINE_PRIM(openfl_harfbuzz_init, 0);
 
 static value openfl_harfbuzz_loadFontFaceFromFile(value filePath, value faceIndex) {
-	bool ret = loadFontFaceFromFile(val_string(filePath), val_int(faceIndex));
-	return alloc_bool(ret);
+	FT_Face *ret = loadFontFaceFromFile(val_string(filePath), val_int(faceIndex));
+	value v = alloc_float ((intptr_t)ret);
+	// val_gc(v, ???);
+	return v;
 }
 DEFINE_PRIM(openfl_harfbuzz_loadFontFaceFromFile, 2);
 
-static value openfl_harfbuzz_setFontSize(value size) {
-	setFontSize(val_int(size));
+static value openfl_harfbuzz_setFontSize(value faceHandle, value size) {
+	FT_Face *face = (FT_Face*)(intptr_t)val_float(faceHandle);
+	setFontSize(face, val_int(size));
 	return alloc_null();
 }
-DEFINE_PRIM(openfl_harfbuzz_setFontSize, 1);
+DEFINE_PRIM(openfl_harfbuzz_setFontSize, 2);
 
 void openfl_harfbuzz_destroyBuffer(value handle) {
-	printf("destructor\n");
 	hb_buffer_t *buffer = (hb_buffer_t *)(intptr_t)val_float(handle);
 	destroyBuffer(buffer);
 }
 
-static value openfl_harfbuzz_createBuffer(value direction, value script, value language) {
-	hb_buffer_t *buffer = createBuffer(val_int(direction), val_string(script), val_string(language));
+static value openfl_harfbuzz_createBuffer(value direction, value script, value language, value text) {
+	hb_buffer_t *buffer = createBuffer(val_int(direction), val_string(script), val_string(language), val_string(text));
 	value v = alloc_float((intptr_t)buffer);
 	val_gc(v, openfl_harfbuzz_destroyBuffer);
 	return v;
 }
-DEFINE_PRIM(openfl_harfbuzz_createBuffer, 3);
+DEFINE_PRIM(openfl_harfbuzz_createBuffer, 4);
+
+static value openfl_harfbuzz_loadGlyphsForBuffer(value faceHandle, value bufferHandle) {
+	FT_Face *face = (FT_Face*)(intptr_t)val_float(faceHandle);
+	hb_buffer_t *buffer = (hb_buffer_t *)(intptr_t)val_float(bufferHandle);
+	loadGlyphsForBuffer(face, buffer);
+	return alloc_null();
+}
+DEFINE_PRIM(openfl_harfbuzz_loadGlyphsForBuffer, 2);
 
 extern "C" void openfl_harfbuzz_main () {
 	

@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-	
 	<ndll name="openfl_harfbuzz" />
-	
-	<!-- Use the following for an Android Java extension, not needed otherwise -->
-	
-	<dependency name="openfl_harfbuzz" path="dependencies/android" if="android" />
-	<android extension="org.haxe.extension.Openfl_harfbuzz" />
-
 	<haxelib name="inthebox-macros" />
-	
+	<source path="src" />
 </project>

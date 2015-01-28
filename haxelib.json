@@ -6,8 +6,9 @@
   "description": "",
   "version": "1.0.0",
   "releasenote": "",
+  "classPath": "src",
   "contributors": [""],
   "dependencies": {
-
+    "inthebox-macros": ""
   }
 }

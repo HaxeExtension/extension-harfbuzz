@@ -1,7 +1,7 @@
 #include "openfl-harfbuzz.h"
 
 #include <algorithm>
-#include <vector>
+#include <set>
 #include <math.h>
 
 #include <hx/CFFI.h>
@@ -70,22 +70,25 @@ namespace openfl_harfbuzz {
 
 		int maxGlyphWidth = -1;
 		int maxGlyphHeight = -1;
-		std::vector<int> glyphsCodepoints;
+		std::set<int> glyphsCodepoints;
 		for (int i = 0; i<glyph_count; i++) {
 			
-			if (std::find(glyphsCodepoints.begin(), glyphsCodepoints.end(), glyph_info[i].codepoint) != glyphsCodepoints.end()) {	// (Contains)
-				printf("Glyph code=%i was already loaded.\n", glyph_info[i].codepoint);
+			int codepoint = glyph_info[i].codepoint;
+
+			if (glyphsCodepoints.find(codepoint)!=glyphsCodepoints.end()) {
+				printf("Glyph code=%i was already loaded.\n", codepoint);
 				continue;
 			}
 
-			if (FT_Load_Glyph(*face, glyph_info[i].codepoint, FT_LOAD_RENDER)!=FT_Err_Ok) {
-				printf("FT_Load_Glyph error, codepoint=%i\n", glyph_info[i].codepoint);
+			if (FT_Load_Glyph(*face, codepoint, FT_LOAD_RENDER)!=FT_Err_Ok) {
+				printf("FT_Load_Glyph error, codepoint=%i\n", codepoint);
 			}
 
-			glyphsCodepoints.push_back(glyph_info[i].codepoint);
+			glyphsCodepoints.insert(codepoint);
 
 			maxGlyphWidth = std::max(maxGlyphWidth, (*face)->glyph->bitmap.width);
 			maxGlyphHeight = std::max(maxGlyphHeight, (*face)->glyph->bitmap.rows);
+
 		}
 
 		maxGlyphWidth++;	// Margin
@@ -99,35 +102,29 @@ namespace openfl_harfbuzz {
 		while (bmpWidth<minBmpWidth) bmpWidth*=2;
 		int bmpHeight = 1;
 		while (bmpHeight<minBmpHeight) bmpHeight*=2;
-		printf("bmpW=%i, bmpH=%i\n", bmpWidth, bmpHeight);
 
-		//ByteArray *glyphAtlas = new ByteArray(bmpWidth*bmpHeight);
+		// hxcffi vars
+		value obj = alloc_empty_object();
 		value glyphAtlas = alloc_array(bmpWidth*bmpHeight);
 
 		int xPos = 0;
 		int yPos = 0;
-		//for (auto &g: glyphs) {
 		for (int i = 0; i<glyph_count; i++) {
 			if (FT_Load_Glyph(*face, glyph_info[i].codepoint, FT_LOAD_RENDER)!=FT_Err_Ok) {
 				printf("FT_Load_Glyph error, codepoint=%i\n", glyph_info[i].codepoint);
 			}
 			int codepoint = glyph_info[i].codepoint;
-			//FT_Bitmap *glyphBmp = g.second;
 			FT_Bitmap glyphBmp;
 			FT_Bitmap_New(&glyphBmp);
 			FT_Bitmap_Convert(library, &((*face)->glyph->bitmap), &glyphBmp, 1);
 
-			//int glyphAtlasBase = xPos%bmpWidth + yPos/bmpWidth;
 			for (int yGlyph=0; yGlyph<glyphBmp.rows; ++yGlyph) {
 				for (int xGlyph=0; xGlyph<glyphBmp.width; ++xGlyph) {
 					unsigned char srcPix = glyphBmp.buffer[yGlyph*glyphBmp.width + xGlyph];
-					//int dstPos = (xPos+xGlyph)%bmpWidth + (yPos+yGlyph*glyphBmp.width)/bmpWidth;
 					int dstPos = (yPos+yGlyph)*bmpWidth + (xPos+xGlyph);
-					printf("%i, glyph=%i\n", dstPos, codepoint);
 					val_array_set_i(glyphAtlas, dstPos, alloc_int(srcPix<<16|srcPix<<8|srcPix));
 				}
 			}
-			printf("%i %i, glyph=%i, width=%i\n", xPos, yPos, codepoint, glyphBmp.width);
 			xPos += maxGlyphWidth;
 			if (xPos+maxGlyphHeight>bmpWidth) {
 				xPos = 0;
@@ -136,7 +133,11 @@ namespace openfl_harfbuzz {
 			FT_Bitmap_Done(library, &glyphBmp);
 		}
 
-		return glyphAtlas;
+		alloc_field(obj, val_id("bmpData"), glyphAtlas);
+		alloc_field(obj, val_id("width"), alloc_int(bmpWidth));
+		alloc_field(obj, val_id("height"), alloc_int(bmpHeight));
+
+		return obj;
 
 	}
 	

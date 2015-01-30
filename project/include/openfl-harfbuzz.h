@@ -14,7 +14,7 @@ namespace openfl_harfbuzz {
 	void setFontSize(FT_Face *face, int size);
 	hb_buffer_t *createBuffer(hb_tag_t direction, const char *script, const char *language, const char *text);
 	void destroyBuffer(hb_buffer_t *buffer);
-	value loadGlyphsForBuffer(FT_Face *face, hb_buffer_t *buffer);
+	value createGlyphAtlas(FT_Face *face, hb_buffer_t *buffer);
 	
 }
 

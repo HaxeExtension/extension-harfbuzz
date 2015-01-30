@@ -46,12 +46,12 @@ static value openfl_harfbuzz_createBuffer(value direction, value script, value l
 }
 DEFINE_PRIM(openfl_harfbuzz_createBuffer, 4);
 
-static value openfl_harfbuzz_loadGlyphsForBuffer(value faceHandle, value bufferHandle) {
+static value openfl_harfbuzz_createGlyphAtlas(value faceHandle, value bufferHandle) {
 	FT_Face *face = (FT_Face*)(intptr_t)val_float(faceHandle);
 	hb_buffer_t *buffer = (hb_buffer_t *)(intptr_t)val_float(bufferHandle);
-	return loadGlyphsForBuffer(face, buffer);
+	return createGlyphAtlas(face, buffer);
 }
-DEFINE_PRIM(openfl_harfbuzz_loadGlyphsForBuffer, 2);
+DEFINE_PRIM(openfl_harfbuzz_createGlyphAtlas, 2);
 
 extern "C" void openfl_harfbuzz_main () {
 	

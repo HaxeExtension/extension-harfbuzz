@@ -49,8 +49,8 @@ DEFINE_PRIM(openfl_harfbuzz_createBuffer, 4);
 static value openfl_harfbuzz_loadGlyphsForBuffer(value faceHandle, value bufferHandle) {
 	FT_Face *face = (FT_Face*)(intptr_t)val_float(faceHandle);
 	hb_buffer_t *buffer = (hb_buffer_t *)(intptr_t)val_float(bufferHandle);
-	loadGlyphsForBuffer(face, buffer);
-	return alloc_null();
+	return loadGlyphsForBuffer(face, buffer);
+	//return alloc_null();
 }
 DEFINE_PRIM(openfl_harfbuzz_loadGlyphsForBuffer, 2);
 

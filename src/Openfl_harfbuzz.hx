@@ -12,6 +12,6 @@ class Openfl_harfbuzz {
 	@CPP public static function loadFontFaceFromFile(filePath : String, faceIndex : Int = 0) : FTFace { return null; };
 	@CPP public static function setFontSize(face : FTFace, size : Int) : Void {};
 	@CPP public static function createBuffer(direction : TextDirection, script : TextScript, language : String, text : String) : HBBuffer { return null; }
-	@CPP public static function loadGlyphsForBuffer(face : FTFace, buffer : HBBuffer) : Void {};
+	@CPP public static function loadGlyphsForBuffer(face : FTFace, buffer : HBBuffer) : Array<Int> {};
 
 }

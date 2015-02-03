@@ -86,7 +86,7 @@ class OpenflHarfbuzzRenderer {
 			maxTotalX = Math.max(maxTotalX, maxX);
 			maxTotalY = Math.max(maxTotalY, maxY);
 
-			xPos += posInfo.advance.x;
+			xPos += posInfo.advance.x / (100/64) + g.bitmapLeft;	// Not sure if correct, but it works...
 			yPos += posInfo.advance.y;
 
 		}

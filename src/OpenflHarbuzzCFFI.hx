@@ -8,7 +8,12 @@ typedef GlyphRect = {
 	x : Int,
 	y : Int,
 	width : Int,
-	height : Int
+	height : Int,
+	bitmapLeft : Int,
+	bitmapTop : Int,
+	bearingX : Float,
+	bearingY : Float,
+	advanceX : Float
 }
 
 typedef GlyphAtlas = {
@@ -18,15 +23,27 @@ typedef GlyphAtlas = {
 	glyphRects : Array<GlyphRect>
 }
 
+typedef Point = {
+	var x : Float;
+	var y : Float;
+}
+
+typedef PosInfo = {
+	var codepoint : Int;
+	var advance : Point;
+	var offset : Point;
+}
+
 @:build(ShortCuts.mirrors())
 @CPP_DEFAULT_LIBRARY("openfl_harfbuzz")
 @CPP_PRIMITIVE_PREFIX("openfl_harfbuzz")
-class Openfl_harfbuzz {
+class OpenflHarbuzzCFFI {
 
 	@CPP public static function init() : Void {}
 	@CPP public static function loadFontFaceFromFile(filePath : String, faceIndex : Int = 0) : FTFace { return null; };
 	@CPP public static function setFontSize(face : FTFace, size : Int) : Void {};
 	@CPP public static function createBuffer(direction : TextDirection, script : TextScript, language : String, text : String) : HBBuffer { return null; }
 	@CPP public static function createGlyphAtlas(face : FTFace, buffer : HBBuffer) : GlyphAtlas {};
+	@CPP public static function layoutText(face : FTFace, buffer : HBBuffer) : Array<PosInfo> {};
 
 }

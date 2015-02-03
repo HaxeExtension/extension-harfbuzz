@@ -17,6 +17,10 @@
 
 namespace openfl_harfbuzz {
 
+	static inline float	to_float (hb_position_t v) {
+	   return scalbnf (v, -12);
+	}
+
 	FT_Library	library;
 
 	void init() {
@@ -59,11 +63,14 @@ namespace openfl_harfbuzz {
 		hb_buffer_destroy(buffer);
 	}
 
+	/**
+	 * createGlyphAtlas
+	 */
 	value createGlyphAtlas(FT_Face *face, hb_buffer_t *buffer) {
-		
+
 		hb_font_t *hbFont = hb_ft_font_create(*face, NULL);
 		hb_shape(hbFont, buffer, NULL, 0);
-		
+
 		unsigned int glyph_count;
 		hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(buffer, &glyph_count);
 
@@ -73,7 +80,7 @@ namespace openfl_harfbuzz {
 		std::set<int> glyphsCodepoints;
 		int uniqueGlyphs = 0;
 		for (int i = 0; i<glyph_count; i++) {
-			
+
 			int codepoint = glyph_info[i].codepoint;
 
 			if (glyphsCodepoints.find(codepoint)!=glyphsCodepoints.end()) {
@@ -122,17 +129,20 @@ namespace openfl_harfbuzz {
 			}
 
 			FT_Bitmap glyphBmp;
+			FT_GlyphSlot ftGlyphRect = (*face)->glyph;
 			FT_Bitmap_New(&glyphBmp);
-			FT_Bitmap_Convert(library, &((*face)->glyph->bitmap), &glyphBmp, 1);
+			//FT_Bitmap_Convert(library, &((*face)->glyph->bitmap), &glyphBmp, 1);
+			FT_Bitmap_Convert(library, &(ftGlyphRect->bitmap), &glyphBmp, 1);
 
 			for (int yGlyph=0; yGlyph<glyphBmp.rows; ++yGlyph) {
 				for (int xGlyph=0; xGlyph<glyphBmp.width; ++xGlyph) {
-					
+
 					unsigned char srcPix = glyphBmp.buffer[yGlyph*glyphBmp.width + xGlyph];
 					int dstPos = (yPos+yGlyph)*bmpWidth + (xPos+xGlyph);
-					
+
 					// hxcffi
-					val_array_set_i(glyphAtlas, dstPos, alloc_int(srcPix<<16|srcPix<<8|srcPix));
+
+					val_array_set_i(glyphAtlas, dstPos, alloc_int(((srcPix)<<24)|0x00ff0000));
 
 				}
 			}
@@ -144,6 +154,11 @@ namespace openfl_harfbuzz {
 			alloc_field(glyphRect, val_id("y"), alloc_int(yPos));
 			alloc_field(glyphRect, val_id("width"), alloc_int(glyphBmp.width));
 			alloc_field(glyphRect, val_id("height"), alloc_int(glyphBmp.rows));
+			alloc_field(glyphRect, val_id("bitmapLeft"), alloc_int(ftGlyphRect->bitmap_left));
+			alloc_field(glyphRect, val_id("bitmapTop"), alloc_int(ftGlyphRect->bitmap_top));
+			alloc_field(glyphRect, val_id("advanceX"), alloc_float(to_float(ftGlyphRect->metrics.horiAdvance)));
+			alloc_field(glyphRect, val_id("bearingX"), alloc_float(to_float(ftGlyphRect->metrics.horiBearingX)));
+			alloc_field(glyphRect, val_id("bearingY"), alloc_float(to_float(ftGlyphRect->metrics.horiBearingY)));
 			val_array_set_i(glyphRects, glyphIndex, glyphRect);
 
 			FT_Bitmap_Done(library, &glyphBmp);
@@ -157,6 +172,8 @@ namespace openfl_harfbuzz {
 
 		}
 
+		hb_font_destroy(hbFont);
+
 		// hxcffi
 		alloc_field(obj, val_id("bmpData"), glyphAtlas);
 		alloc_field(obj, val_id("width"), alloc_int(bmpWidth));
@@ -166,5 +183,47 @@ namespace openfl_harfbuzz {
 		return obj;
 
 	}
-	
+
+	/**
+	 * layoutText
+	 */
+	value layoutText(FT_Face *face, hb_buffer_t *buffer) {
+
+		hb_font_t *hbFont = hb_ft_font_create(*face, NULL);
+		hb_shape(hbFont, buffer, NULL, 0);
+
+		unsigned int glyph_count;
+		hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(buffer, &glyph_count);
+		hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buffer, &glyph_count);
+
+		//float hres = 64;	// ???
+		value posInfo = alloc_array(glyph_count);
+		int posIndex = 0;
+
+		for (int i = 0; i<glyph_count; ++i) {
+
+			hb_glyph_position_t pos = glyph_pos[i];
+
+			value obj = alloc_empty_object ();
+			alloc_field (obj, val_id ("codepoint"), alloc_float (glyph_info[i].codepoint));
+
+			value advance = alloc_empty_object();
+			alloc_field(advance, val_id("x"), alloc_float(to_float(pos.x_advance)));
+			alloc_field(advance, val_id("y"), alloc_float(to_float(pos.y_advance)));
+			alloc_field(obj, val_id("advance"), advance);
+
+			value offset = alloc_empty_object();
+			alloc_field(offset, val_id("x"), alloc_float(to_float(pos.x_offset)));
+			alloc_field(offset, val_id("y"), alloc_float(to_float(pos.y_offset)));
+			alloc_field(obj, val_id("offset"), offset);
+
+			val_array_set_i(posInfo, posIndex++, obj);
+
+		}
+
+		hb_font_destroy (hbFont);
+
+		return posInfo;
+	}
+
 }

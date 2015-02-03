@@ -1,6 +1,7 @@
 package;
 
 import openfl.display.BitmapData;
+import openfl.display.Sprite;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import OpenflHarbuzzCFFI;
@@ -14,7 +15,7 @@ class OpenflHarfbuzzRenderer {
 	var language : String;
 
 	var face : FTFace;
-	public var glyphsBmp(default, null) : BitmapData;
+	var renderer : TilesRenderer;
 	var glyphs : Map<Int, GlyphRect>;
 
 	public function new(
@@ -37,7 +38,8 @@ class OpenflHarfbuzzRenderer {
 		OpenflHarbuzzCFFI.setFontSize(face, textSize);
 
 		var glyphAtlasResult = OpenflHarbuzzCFFI.createGlyphAtlas(face, createBuffer(text));
-		glyphsBmp = new BitmapData(glyphAtlasResult.width, glyphAtlasResult.height);
+		var glyphsBmp = new BitmapData(glyphAtlasResult.width, glyphAtlasResult.height);
+		trace(glyphsBmp.width + " " + glyphsBmp.height);
 
 		for (i in 0...glyphAtlasResult.bmpData.length) {
 			var pixel = glyphAtlasResult.bmpData[i];
@@ -45,9 +47,13 @@ class OpenflHarfbuzzRenderer {
 		}
 
 		glyphs = new Map();
+		var glyphsRects = new Array<{ codepoint : Int, rect : Rectangle }>();
 		for (rect in glyphAtlasResult.glyphRects) {
 			glyphs[rect.codepoint] = rect;
+			glyphsRects.push({ codepoint : rect.codepoint, rect : new Rectangle(rect.x, rect.y, rect.width, rect.height) });
 		}
+
+		renderer = new TilesRenderer(glyphsBmp, glyphsRects);
 
 	}
 
@@ -55,7 +61,7 @@ class OpenflHarfbuzzRenderer {
 		return OpenflHarbuzzCFFI.createBuffer(direction, script, language, text);
 	}
 
-	public function renderText(text : String) : BitmapData {
+	public function renderText(text : String, color : Int) : Sprite {
 
 		var layout = OpenflHarbuzzCFFI.layoutText(face, createBuffer(text));
 
@@ -96,24 +102,23 @@ class OpenflHarfbuzzRenderer {
 		var xPos = 0.0;
 		var yPos = 0.0;
 
+		var renderList = new Array<{ codepoint : Int, x : Float, y : Float }>();
 		for (posInfo in layout) {
 
 			var g = glyphs[posInfo.codepoint];
-			var srcRect = new Rectangle(g.x, g.y, g.width, g.height);
+			
 			var dstX:Int = Std.int(xPos + posInfo.offset.x + g.bitmapLeft);
 			var dstY:Int = Std.int(yPos + posInfo.offset.y - g.bitmapTop - minTotalY);
-			for(x in 0...g.width) for (y in 0...g.height) {
-				var p1=bmpData.getPixel32(x+dstX, y+dstY);
-				var p2=glyphsBmp.getPixel32(g.x+x, g.y+y);
-				bmpData.setPixel32(x+dstX, y+dstY, p1>p2?p2:p1);
-			}
+
+			renderList.push({ codepoint : g.codepoint, x : dstX, y : dstY });
 
 			xPos += posInfo.advance.x / (100/64);	// 100/64 = 1.5625 = Magic!
 			yPos += posInfo.advance.y;
 
 		}
 
-		return bmpData;
+		return renderer.render(renderList, ((color>>16)&0xff)/255.0, ((color>>8)&0xff)/255.0, (color&0xff)/255.0);
+
 	}
 
 }

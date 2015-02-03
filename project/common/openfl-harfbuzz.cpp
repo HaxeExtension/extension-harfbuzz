@@ -142,7 +142,7 @@ namespace openfl_harfbuzz {
 
 					// hxcffi
 
-					val_array_set_i(glyphAtlas, dstPos, alloc_int(((srcPix)<<24)|0x00ff0000));
+					val_array_set_i(glyphAtlas, dstPos, alloc_int((srcPix<<24)|0xffffff));
 
 				}
 			}

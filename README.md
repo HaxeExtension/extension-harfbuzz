@@ -26,7 +26,10 @@ class Main extends Sprite {
 			"مرحبا أصدقاء كيف هي؟"
 		);
 
-		var bmp = renderer.renderText("مرحبا أصدقاء كيف هي؟", 0xe57d00);
+		var bmp = renderer.renderText(
+			"مرحبا أصدقاء كيف هي؟",
+			0xe57d00);
+		
 		bmp.x = 20;
 		bmp.y = 20;
 		addChild(bmp);

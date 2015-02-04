@@ -138,7 +138,6 @@ namespace openfl_harfbuzz {
 			FT_Bitmap glyphBmp;
 			FT_GlyphSlot ftGlyphRect = (*face)->glyph;
 			FT_Bitmap_New(&glyphBmp);
-			//FT_Bitmap_Convert(library, &((*face)->glyph->bitmap), &glyphBmp, 1);
 			FT_Bitmap_Convert(library, &(ftGlyphRect->bitmap), &glyphBmp, 1);
 
 			for (int yGlyph=0; yGlyph<glyphBmp.rows; ++yGlyph) {
@@ -148,7 +147,6 @@ namespace openfl_harfbuzz {
 					int dstPos = (yPos+yGlyph)*bmpWidth + (xPos+xGlyph);
 
 					// hxcffi
-
 					val_array_set_i(glyphAtlas, dstPos, alloc_int((srcPix<<24)|0xffffff));
 
 				}

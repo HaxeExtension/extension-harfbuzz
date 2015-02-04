@@ -30,6 +30,8 @@ class TilesRenderer {
 	}
 
 	public function render(
+		textWidth : Float,
+		textHeight : Float,
 		glyphList : Array<{ codepoint : Int, x : Float, y : Float }>,
 		colorR : Float,
 		colorG : Float,
@@ -49,7 +51,12 @@ class TilesRenderer {
 		}
 		
 		gfx.clear();
+
 		tilesheet.drawTiles(gfx, blitList, true, Graphics.TILE_RGB);
+
+		gfx.beginFill(0xff00ff, 0.3);
+		gfx.drawRect(0, 0, textWidth, textHeight);
+		gfx.endFill();
 
 		return spr;
 

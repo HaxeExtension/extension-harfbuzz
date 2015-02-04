@@ -13,6 +13,7 @@ class OpenflHarfbuzzRenderer {
 	var direction : TextDirection;
 	var script : TextScript;
 	var language : String;
+	var lineHeight : Float;
 
 	var face : FTFace;
 	var renderer : TilesRenderer;
@@ -29,6 +30,7 @@ class OpenflHarfbuzzRenderer {
 		this.direction = direction;
 		this.script = script;
 		this.language = language;
+		this.lineHeight = textSize;
 
 		if (!harfbuzzIsInited) {
 			OpenflHarbuzzCFFI.init();
@@ -61,64 +63,92 @@ class OpenflHarfbuzzRenderer {
 		return OpenflHarbuzzCFFI.createBuffer(direction, script, language, text);
 	}
 
-	public function renderText(text : String, color : Int) : Sprite {
-
-		var layout = OpenflHarbuzzCFFI.layoutText(face, createBuffer(text));
-
-		var minTotalX = 9999.0;
-		var maxTotalX = -9999.0;
-		var minTotalY = 9999.0;
-		var maxTotalY = -9999.0;
-
-		var xPos = 0.0;
-		var yPos = 0.0;
-
-		if (layout.length==0) {
-			minTotalX = maxTotalX = minTotalY = maxTotalY = 0;
+	// Splits text into words containging the trailing spaces ("a b c"=["a ", "b ", "c "])
+	function split(text : String) : Array<String> {
+		var ret = text.split(" ");
+		for (i in 0...ret.length) {
+			ret[i] = ret[i] + " ";
 		}
+		return ret;
+	}
 
+	function layouWidth(layout : Array<PosInfo>) : Float {
+		var xPos = 0.0;
 		for (posInfo in layout) {
-
-			var g = glyphs[posInfo.codepoint];
-
-			var minX = xPos + posInfo.offset.x;
-			var maxX = minX + g.width;
-
-			var minY = yPos + posInfo.offset.y - g.bitmapTop;
-			var maxY = minY + g.height;
-
-			minTotalX = Math.min(minTotalX, minX);
-			minTotalY = Math.min(minTotalY, minY);
-			maxTotalX = Math.max(maxTotalX, maxX);
-			maxTotalY = Math.max(maxTotalY, maxY);
-
-			xPos += posInfo.advance.x / (100/64) + g.bitmapLeft;	// Not sure if correct, but it works...
-			yPos += posInfo.advance.y;
-
+			xPos += posInfo.advance.x / (100/64);	// 100/64 = 1.5625 = Magic!
 		}
+		return xPos;
+	}
 
-		var bmpData = new BitmapData(Std.int(maxTotalX-minTotalX), Std.int(maxTotalY-minTotalY));
+	function renderWords(words : Array<String>) : Array<Array<PosInfo>> {
+		var ret = [];
+		for (word in words) {
+			ret.push(OpenflHarbuzzCFFI.layoutText(face, createBuffer(word)));
+		}
+		return ret;
+	}
 
-		var xPos = 0.0;
-		var yPos = 0.0;
+	public function renderText(text : String, width : Float, color : Int) : Sprite {
 
 		var renderList = new Array<{ codepoint : Int, x : Float, y : Float }>();
+		var words = renderWords(split(text));
+
+		var lineNumber = 1;
+		var maxLineWidth = 400;
+		var xPosBase = 0.0;
+		var yPosBase = lineNumber*lineHeight;
+
+		for (word in words) {
+
+			var wordWidth = layouWidth(word);
+
+			if (xPosBase>0 && xPosBase+wordWidth>width) {
+				xPosBase = 0;
+				lineNumber++;
+				yPosBase = lineNumber*lineHeight;
+			}
+
+			var xPos = xPosBase;
+			var yPos = yPosBase;
+
+			for (posInfo in word) {
+				var g = glyphs[posInfo.codepoint];
+				var dstX = Std.int(xPos + posInfo.offset.x + g.bitmapLeft);
+				var dstY = Std.int(yPos + posInfo.offset.y - g.bitmapTop);
+				renderList.push({ codepoint : g.codepoint, x : dstX, y : dstY });
+				xPos += posInfo.advance.x / (100/64);	// 100/64 = 1.5625 = Magic!
+				yPos += posInfo.advance.y / (100/64);
+			}
+
+			xPosBase += wordWidth;
+
+		}
+
+		return renderer.render(width, (lineNumber)*lineHeight, renderList, ((color>>16)&0xff)/255.0, ((color>>8)&0xff)/255.0, (color&0xff)/255.0);
+
+		/*
+		var currentWord = "";
+		var layout = [];
+
+		layout = OpenflHarbuzzCFFI.layoutText(face, createBuffer(currentWord));
+
+
 		for (posInfo in layout) {
 
 			var g = glyphs[posInfo.codepoint];
 			
-			var dstX:Int = Std.int(xPos + posInfo.offset.x + g.bitmapLeft);
-			var dstY:Int = Std.int(yPos + posInfo.offset.y - g.bitmapTop - minTotalY);
+			var dstX = Std.int(xPos + posInfo.offset.x + g.bitmapLeft);
+			var dstY = Std.int(yPos + posInfo.offset.y - g.bitmapTop);
 
 			renderList.push({ codepoint : g.codepoint, x : dstX, y : dstY });
 
 			xPos += posInfo.advance.x / (100/64);	// 100/64 = 1.5625 = Magic!
-			yPos += posInfo.advance.y;
+			yPos += posInfo.advance.y / (100/64);
 
 		}
 
-		return renderer.render(renderList, ((color>>16)&0xff)/255.0, ((color>>8)&0xff)/255.0, (color&0xff)/255.0);
-
+		return renderer.render(lineHeight, renderList, ((color>>16)&0xff)/255.0, ((color>>8)&0xff)/255.0, (color&0xff)/255.0);
+		*/
 	}
 
 }

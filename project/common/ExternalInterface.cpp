@@ -9,6 +9,8 @@
 
 #include <hx/CFFI.h>
 #include "openfl-harfbuzz.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 using namespace openfl_harfbuzz;
 
@@ -18,10 +20,15 @@ static value openfl_harfbuzz_init() {
 }
 DEFINE_PRIM(openfl_harfbuzz_init, 0);
 
+void openfl_harfbuzz_destroyFace(value handle) {
+	FT_Face *face = (FT_Face *)(intptr_t)val_float(handle);
+	destroyFace(face);
+}
+
 static value openfl_harfbuzz_loadFontFaceFromFile(value filePath, value faceIndex) {
 	FT_Face *ret = loadFontFaceFromFile(val_string(filePath), val_int(faceIndex));
-	value v = alloc_float ((intptr_t)ret);
-	// val_gc(v, ???);
+	value v = alloc_float((intptr_t)ret);
+	val_gc(v, openfl_harfbuzz_destroyFace);
 	return v;
 }
 DEFINE_PRIM(openfl_harfbuzz_loadFontFaceFromFile, 2);

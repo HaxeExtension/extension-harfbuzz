@@ -36,6 +36,12 @@ namespace openfl_harfbuzz {
 		return error==FT_Err_Ok ? face : NULL;
 	}
 
+	void destroyFace(FT_Face *face) {
+		FT_Done_Face(*face);
+		//printf("free face\n");
+	}
+
+	// TODO: Improve this function.
 	void setFontSize(FT_Face *face, int size) {
 		int hdpi = 72;
 		int vdpi = 72;
@@ -46,7 +52,7 @@ namespace openfl_harfbuzz {
 			(int)((0.0) * 0x10000L),
 			(int)((1.0) * 0x10000L)
 		};
-		FT_Set_Char_Size(*face, 0, (int)(size*64), (int)(hdpi * hres), vdpi);
+		FT_Set_Char_Size(*face, 0, (int)(size*64), (int)(hdpi*hres), vdpi);
 		FT_Set_Transform(*face, &matrix, NULL);
 	}
 
@@ -61,6 +67,7 @@ namespace openfl_harfbuzz {
 
 	void destroyBuffer(hb_buffer_t *buffer) {
 		hb_buffer_destroy(buffer);
+		//printf("free buffer\n");
 	}
 
 	/**
@@ -196,7 +203,6 @@ namespace openfl_harfbuzz {
 		hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(buffer, &glyph_count);
 		hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buffer, &glyph_count);
 
-		//float hres = 64;	// ???
 		value posInfo = alloc_array(glyph_count);
 		int posIndex = 0;
 
@@ -205,7 +211,7 @@ namespace openfl_harfbuzz {
 			hb_glyph_position_t pos = glyph_pos[i];
 
 			value obj = alloc_empty_object ();
-			alloc_field (obj, val_id ("codepoint"), alloc_float (glyph_info[i].codepoint));
+			alloc_field (obj, val_id ("codepoint"), alloc_int(glyph_info[i].codepoint));
 
 			value advance = alloc_empty_object();
 			alloc_field(advance, val_id("x"), alloc_float(to_float(pos.x_advance)));

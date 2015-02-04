@@ -11,6 +11,7 @@ namespace openfl_harfbuzz {
 	
 	void init();
 	FT_Face *loadFontFaceFromFile(const char *filePath, int faceIndex);
+	void destroyFace(FT_Face *face);
 	void setFontSize(FT_Face *face, int size);
 	hb_buffer_t *createBuffer(hb_tag_t direction, const char *script, const char *language, const char *text);
 	void destroyBuffer(hb_buffer_t *buffer);

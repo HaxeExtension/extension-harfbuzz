@@ -39,7 +39,6 @@ class TilesRenderer {
 		var gfx = spr.graphics;
 		blitList = [];
 		
-		trace(colorR + " " + colorG + " " + colorB);
 		for (g in glyphList) {
 			blitList.push(g.x);
 			blitList.push(g.y);

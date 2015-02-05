@@ -65,9 +65,17 @@ class OpenflHarfbuzzRenderer {
 
 	// Splits text into words containging the trailing spaces ("a b c"=["a ", "b ", "c "])
 	function split(text : String) : Array<String> {
-		var ret = text.split(" ");
-		for (i in 0...ret.length) {
-			ret[i] = ret[i] + " ";
+		var ret = [];
+		var currentWord = "";
+		for (i in 0...text.length) {
+			currentWord+=text.charAt(i);
+			if (StringTools.isSpace(text, i)) {
+				ret.push(currentWord);
+				currentWord = "";
+			}
+		}
+		if (currentWord.length>0) {
+			ret.push(currentWord);
 		}
 		return ret;
 	}

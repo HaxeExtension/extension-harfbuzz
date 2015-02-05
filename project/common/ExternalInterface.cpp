@@ -67,6 +67,12 @@ static value openfl_harfbuzz_layoutText(value faceHandle, value bufferHandle) {
 }
 DEFINE_PRIM(openfl_harfbuzz_layoutText, 2);
 
+static value openfl_harfbuzz_getFaceMetrics(value faceHandle) {
+	FT_Face *face = (FT_Face*)(intptr_t)val_float(faceHandle);
+	return getFaceMetrics(face);
+}
+DEFINE_PRIM(openfl_harfbuzz_getFaceMetrics, 1);
+
 extern "C" void openfl_harfbuzz_main () {
 	
 	val_int(0); // Fix Neko init

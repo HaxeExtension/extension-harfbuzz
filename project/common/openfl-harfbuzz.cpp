@@ -17,11 +17,19 @@
 
 namespace openfl_harfbuzz {
 
-	static inline float	to_float (hb_position_t v) {
-	   return scalbnf (v, -12);
+	FT_Library	library;
+
+	static inline float	to_float(hb_position_t v) {
+	   return scalbnf(v, -12);
 	}
 
-	FT_Library	library;
+	static inline float i16_16_to_float(hb_position_t v) {
+		return scalbnf(v, -16);
+	}
+
+	static inline float i26_6_to_float(hb_position_t v) {
+		return scalbnf(v, -6);	
+	}
 
 	void init() {
 		FT_Error error = FT_Init_FreeType(&library);
@@ -91,7 +99,7 @@ namespace openfl_harfbuzz {
 			int codepoint = glyph_info[i].codepoint;
 
 			if (glyphsCodepoints.find(codepoint)!=glyphsCodepoints.end()) {
-				printf("Glyph code=%i was already loaded.\n", codepoint);
+				//printf("Glyph code=%i was already loaded.\n", codepoint);
 				continue;
 			}
 
@@ -208,7 +216,7 @@ namespace openfl_harfbuzz {
 
 			hb_glyph_position_t pos = glyph_pos[i];
 
-			value obj = alloc_empty_object ();
+			value obj = alloc_empty_object();
 			alloc_field (obj, val_id ("codepoint"), alloc_int(glyph_info[i].codepoint));
 
 			value advance = alloc_empty_object();
@@ -228,6 +236,19 @@ namespace openfl_harfbuzz {
 		hb_font_destroy (hbFont);
 
 		return posInfo;
+	}
+
+	value getFaceMetrics(FT_Face *face) {
+		value obj = alloc_empty_object();
+		FT_BBox *bbox = &((*face)->bbox);
+		alloc_field(obj, val_id("ascender"), alloc_int((*face)->ascender));
+		alloc_field(obj, val_id("descender"), alloc_int((*face)->descender));
+		alloc_field(obj, val_id("height"), alloc_int((*face)->height));
+		alloc_field(obj, val_id("bbox_xMin"), alloc_float(i26_6_to_float(bbox->xMin)));
+		alloc_field(obj, val_id("bbox_yMin"), alloc_float(i26_6_to_float(bbox->yMin)));
+		alloc_field(obj, val_id("bbox_xMax"), alloc_float(i26_6_to_float(bbox->xMax)));
+		alloc_field(obj, val_id("bbox_yMax"), alloc_float(i26_6_to_float(bbox->yMax)));
+		return obj;
 	}
 
 }

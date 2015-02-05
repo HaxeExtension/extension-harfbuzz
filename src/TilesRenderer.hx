@@ -54,7 +54,7 @@ class TilesRenderer {
 
 		tilesheet.drawTiles(gfx, blitList, true, Graphics.TILE_RGB);
 
-		gfx.beginFill(0xff00ff, 0.3);
+		gfx.beginFill(0, 0.0);
 		gfx.drawRect(0, 0, textWidth, textHeight);
 		gfx.endFill();
 

@@ -88,67 +88,76 @@ class OpenflHarfbuzzRenderer {
 		return ret;
 	}
 
-	public function renderText(text : String, width : Float, color : Int) : Sprite {
+	function isEndOfLine(xPos : Float, wordWidth : Float, lineWidth : Float) {
+		if (direction == LeftToRight) {
+			return (xPos>0.0 && xPos+wordWidth>lineWidth);
+		}
+		else {	// RightToLeft
+			return (xPos<lineWidth&& xPos-wordWidth<0.0);
+		}
+	}
+
+	public function renderText(text : String, lineWidth : Float, color : Int) : Sprite {
 
 		var renderList = new Array<{ codepoint : Int, x : Float, y : Float }>();
 		var words = renderWords(split(text));
 
-		var lineNumber = 1;
+		var lineNumber : Int = 1;
 		var maxLineWidth = 400;
-		var xPosBase = 0.0;
-		var yPosBase = lineNumber*lineHeight;
+		
+		var lineXStart = direction==LeftToRight ? 0.0 : lineWidth;
+		var xPosBase : Float = lineXStart;
+		var yPosBase : Float = lineNumber*lineHeight;
 
 		for (word in words) {
 
 			var wordWidth = layouWidth(word);
-
-			if (xPosBase>0 && xPosBase+wordWidth>width) {
-				xPosBase = 0;
+			
+			//if (xPosBase>0.0 && xPosBase+wordWidth>lineWidth) {
+			if (isEndOfLine(xPosBase, wordWidth, lineWidth)) {
+				
+				// Newline
+				xPosBase = lineXStart;
 				lineNumber++;
 				yPosBase = lineNumber*lineHeight;
+				
 			}
 
 			var xPos = xPosBase;
+			if (direction==RightToLeft)	xPos-=wordWidth;
 			var yPos = yPosBase;
 
 			for (posInfo in word) {
+
 				var g = glyphs[posInfo.codepoint];
 				var dstX = Std.int(xPos + posInfo.offset.x + g.bitmapLeft);
 				var dstY = Std.int(yPos + posInfo.offset.y - g.bitmapTop);
 				renderList.push({ codepoint : g.codepoint, x : dstX, y : dstY });
+
 				xPos += posInfo.advance.x / (100/64);	// 100/64 = 1.5625 = Magic!
 				yPos += posInfo.advance.y / (100/64);
+				
+				if (xPos>lineWidth && direction==LeftToRight) {
+
+					// Newline
+					xPos = 0;
+					lineNumber++;
+					yPos = lineNumber*lineHeight;
+
+				}
+				
 			}
 
-			xPosBase += wordWidth;
+			if (direction==LeftToRight) {
+				xPosBase += wordWidth;
+			} else {
+				xPosBase -= wordWidth;
+			}
 
 		}
 
-		return renderer.render(width, (lineNumber)*lineHeight, renderList, ((color>>16)&0xff)/255.0, ((color>>8)&0xff)/255.0, (color&0xff)/255.0);
+		return renderer.render(lineWidth, (lineNumber)*lineHeight, renderList, ((color>>16)&0xff)/255.0, ((color>>8)&0xff)/255.0, (color&0xff)/255.0);
 
-		/*
-		var currentWord = "";
-		var layout = [];
-
-		layout = OpenflHarbuzzCFFI.layoutText(face, createBuffer(currentWord));
-
-
-		for (posInfo in layout) {
-
-			var g = glyphs[posInfo.codepoint];
-			
-			var dstX = Std.int(xPos + posInfo.offset.x + g.bitmapLeft);
-			var dstY = Std.int(yPos + posInfo.offset.y - g.bitmapTop);
-
-			renderList.push({ codepoint : g.codepoint, x : dstX, y : dstY });
-
-			xPos += posInfo.advance.x / (100/64);	// 100/64 = 1.5625 = Magic!
-			yPos += posInfo.advance.y / (100/64);
-
-		}
-
-		return renderer.render(lineHeight, renderList, ((color>>16)&0xff)/255.0, ((color>>8)&0xff)/255.0, (color&0xff)/255.0);
-		*/
 	}
 
 }

@@ -28,6 +28,16 @@ typedef Point = {
 	var y : Float;
 }
 
+typedef FaceMetrics = {
+	ascender : Int,
+	descender : Int,
+	height : Int,
+	xMin : Float,
+	yMin : Float,
+	xMax : Float,
+	yMax : Float
+}
+
 typedef PosInfo = {
 	var codepoint : Int;
 	var advance : Point;
@@ -40,10 +50,11 @@ typedef PosInfo = {
 class OpenflHarbuzzCFFI {
 
 	@CPP public static function init() : Void {}
-	@CPP public static function loadFontFaceFromFile(filePath : String, faceIndex : Int = 0) : FTFace { return null; };
-	@CPP public static function setFontSize(face : FTFace, size : Int) : Void {};
-	@CPP public static function createBuffer(direction : TextDirection, script : TextScript, language : String, text : String) : HBBuffer { return null; }
-	@CPP public static function createGlyphAtlas(face : FTFace, buffer : HBBuffer) : GlyphAtlas {};
-	@CPP public static function layoutText(face : FTFace, buffer : HBBuffer) : Array<PosInfo> {};
+	@CPP public static function loadFontFaceFromFile(filePath : String, faceIndex : Int = 0) : FTFace;
+	@CPP public static function setFontSize(face : FTFace, size : Int) : Void;
+	@CPP public static function createBuffer(direction : TextDirection, script : TextScript, language : String, text : String) : HBBuffer;
+	@CPP public static function createGlyphAtlas(face : FTFace, buffer : HBBuffer) : GlyphAtlas;
+	@CPP public static function layoutText(face : FTFace, buffer : HBBuffer) : Array<PosInfo>;
+	@CPP public static function getFaceMetrics(face : FTFace) : FaceMetrics;
 
 }

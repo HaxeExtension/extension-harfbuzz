@@ -141,3 +141,14 @@
 	var ScriptWarangCiti = "Wara";
 
 }
+
+class TextScriptTools {
+
+	public static function isRightToLeft(script : TextScript) : Bool {
+		return switch (script) {
+			case ScriptArabic:	true;
+			default:			false;
+		}
+	}
+
+}

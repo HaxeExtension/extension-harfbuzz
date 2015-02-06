@@ -38,14 +38,7 @@ class ScriptIdentificator {
 		new UnicodeBlock(0x10E60, 0x10E7F, ScriptArabic),
 		new UnicodeBlock(0x1EE00, 0x1EEFF, ScriptArabic)
 	];
-
-	static function isRightToLeft(script : TextScript) : Bool {
-		return switch (script) {
-			case ScriptArabic:	true;
-			default:			false;
-		}
-	}
-
+	
 	static function getCharCodeScript(utfCharCode : Int) : TextScript {
 		for (block in blocks) {
 			if (block.test(utfCharCode))	return block.script;
@@ -73,8 +66,6 @@ class ScriptIdentificator {
 				mostCommonScript = script;
 			}
 		}
-
-		trace(scriptsCount);
 
 		return mostCommonScript;
 

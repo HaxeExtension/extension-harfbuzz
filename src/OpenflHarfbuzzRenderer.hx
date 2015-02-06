@@ -5,6 +5,7 @@ import openfl.display.Sprite;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import OpenflHarbuzzCFFI;
+import TextScript;
 
 class OpenflHarfbuzzRenderer {
 
@@ -105,14 +106,48 @@ class OpenflHarfbuzzRenderer {
 		}
 	}
 
+	// if "text" is in RtoL script, invert non-RtoL substrings
+	function preProcessText(text : String) {
+
+		var generalTextIsRtoL = TextScriptTools.isRightToLeft(script);
+		var words = split(text);
+		var arr : Array<{text : String, invert : Bool}> = [{ text : "", invert : false }];
+		for (word in words) {
+			var shouldInvertCurrentWord = TextScriptTools.isRightToLeft(ScriptIdentificator.identify(word))!=generalTextIsRtoL;
+			var currentPhrase = arr[arr.length-1];
+			if (currentPhrase.invert==shouldInvertCurrentWord) {
+				currentPhrase.text += word;
+			} else {
+				arr.push({ text : word, invert : shouldInvertCurrentWord });
+			}
+		}
+
+		var ret = "";
+		for (a in arr) {
+			var phrase = a.text;
+			if (a.invert) {
+				// Invert phrase http://stackoverflow.com/questions/13317329/reverse-string-in-haxe-2-10
+				var a = phrase.split('');
+		        a.reverse();
+		        phrase = a.join('');
+			}
+			ret += phrase;
+		}
+
+		return ret;
+
+	}
+
 	public function renderText(text : String, lineWidth : Float, color : Int) : Sprite {
+
+		text = preProcessText(text);
 
 		var renderList = new Array<{ codepoint : Int, x : Float, y : Float }>();
 		var words = renderWords(split(text));
 
 		var lineNumber : Int = 1;
 		var maxLineWidth = 400;
-		
+
 		var lineXStart = direction==LeftToRight ? 0.0 : lineWidth;
 		var xPosBase : Float = lineXStart;
 		var yPosBase : Float = lineNumber*lineHeight;
@@ -120,15 +155,14 @@ class OpenflHarfbuzzRenderer {
 		for (word in words) {
 
 			var wordWidth = layouWidth(word);
-			
-			//if (xPosBase>0.0 && xPosBase+wordWidth>lineWidth) {
+
 			if (isEndOfLine(xPosBase, wordWidth, lineWidth)) {
-				
+
 				// Newline
 				xPosBase = lineXStart;
 				lineNumber++;
 				yPosBase = lineNumber*lineHeight;
-				
+
 			}
 
 			var xPos = xPosBase;
@@ -144,7 +178,7 @@ class OpenflHarfbuzzRenderer {
 
 				xPos += posInfo.advance.x / (100/64);	// 100/64 = 1.5625 = Magic!
 				yPos += posInfo.advance.y / (100/64);
-				
+
 				if (xPos>lineWidth && direction==LeftToRight) {
 
 					// Newline
@@ -153,7 +187,7 @@ class OpenflHarfbuzzRenderer {
 					yPos = lineNumber*lineHeight;
 
 				}
-				
+
 			}
 
 			if (direction==LeftToRight) {

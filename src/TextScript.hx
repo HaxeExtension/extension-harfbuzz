@@ -1,4 +1,4 @@
-@:enum abstract TextScript(String) to (String) {
+@:enum abstract TextScript(String) to(String) from(String) {
 
 	var ScriptCommon = "Zyyy";
 	var ScriptInherited = "Zinh";

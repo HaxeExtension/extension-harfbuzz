@@ -1,3 +1,5 @@
+package extension.harfbuzz;
+
 @:enum abstract TextScript(String) to(String) from(String) {
 
 	var ScriptCommon = "Zyyy";

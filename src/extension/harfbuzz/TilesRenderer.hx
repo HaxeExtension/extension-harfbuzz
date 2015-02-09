@@ -1,5 +1,4 @@
-
-package ;
+package extension.harfbuzz;
 
 import openfl.display.BitmapData;
 import openfl.display.Graphics;

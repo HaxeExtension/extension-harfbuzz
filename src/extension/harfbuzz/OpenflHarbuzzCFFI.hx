@@ -1,4 +1,4 @@
-package;
+package extension.harfbuzz;
 
 typedef FTFace = Dynamic;
 typedef HBBuffer = Dynamic;

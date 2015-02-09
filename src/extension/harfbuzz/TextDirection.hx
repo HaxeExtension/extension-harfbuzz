@@ -1,4 +1,4 @@
-package;
+package extension.harfbuzz;
 
 @:enum abstract TextDirection(Int) to (Int) {
 

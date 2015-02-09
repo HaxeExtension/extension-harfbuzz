@@ -1,11 +1,11 @@
-package;
+package extension.harfbuzz;
 
 import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
-import OpenflHarbuzzCFFI;
-import TextScript;
+import extension.harfbuzz.OpenflHarbuzzCFFI;
+import extension.harfbuzz.TextScript;
 
 class OpenflHarfbuzzRenderer {
 

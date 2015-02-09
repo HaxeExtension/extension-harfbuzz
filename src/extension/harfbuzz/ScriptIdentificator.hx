@@ -1,5 +1,4 @@
-
-package ;
+package extension.harfbuzz;
 
 import haxe.Utf8;
 

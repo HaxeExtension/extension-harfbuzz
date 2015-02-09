@@ -23,13 +23,21 @@ class OpenflHarfbuzzRenderer {
 	public function new(
 			ttfPath : String,
 			textSize : Int,
-			direction : TextDirection,
-			script : TextScript,
-			language : String,
-			text : String) {
+			text : String,
+			language : String = "",
+			script : TextScript = null,
+			direction : TextDirection = null) {
 
-		this.direction = direction;
+		if (script==null) {
+			script = ScriptIdentificator.identify(text);
+		}
 		this.script = script;
+
+		if (direction==null) {
+			direction = TextScriptTools.isRightToLeft(script) ? RightToLeft : LeftToRight;
+		}
+		this.direction = direction;
+
 		this.language = language;
 		this.lineHeight = textSize;
 
@@ -126,10 +134,13 @@ class OpenflHarfbuzzRenderer {
 		for (a in arr) {
 			var phrase = a.text;
 			if (a.invert) {
-				// Invert phrase http://stackoverflow.com/questions/13317329/reverse-string-in-haxe-2-10
-				var a = phrase.split('');
-		        a.reverse();
-		        phrase = a.join('');
+		    	var inverted = "";
+		    	var i = phrase.length;
+		    	while (i>0) {
+		    		i--;
+		    		inverted += phrase.charAt(i);
+		    	}
+		    	phrase = inverted;
 			}
 			ret += phrase;
 		}

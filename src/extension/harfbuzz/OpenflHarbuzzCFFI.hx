@@ -51,6 +51,7 @@ class OpenflHarbuzzCFFI {
 
 	@CPP public static function init() : Void {}
 	@CPP public static function loadFontFaceFromFile(filePath : String, faceIndex : Int = 0) : FTFace;
+	@CPP public static function loadFontFaceFromMemory(bytes : haxe.io.BytesData, faceIndex : Int = 0) : FTFace;
 	@CPP public static function setFontSize(face : FTFace, size : Int) : Void;
 	@CPP public static function createBuffer(direction : TextDirection, script : TextScript, language : String, text : String) : HBBuffer;
 	@CPP public static function createGlyphAtlas(face : FTFace, buffer : HBBuffer) : GlyphAtlas;

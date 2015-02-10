@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <set>
 #include <math.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 #include <hx/CFFI.h>
 
@@ -39,14 +41,21 @@ namespace openfl_harfbuzz {
 	}
 
 	FT_Face *loadFontFaceFromFile(const char *filePath, int faceIndex) {
-		FT_Face *face = new FT_Face;	// TODO: Free this reference
+		FT_Face *face = new FT_Face;
+		struct stat buffer;
+		if (stat(filePath, &buffer)!=0)	return (FT_Face*)errno;
 		FT_Error error = FT_New_Face(library, filePath, faceIndex, face);
+		return error==FT_Err_Ok ? face : NULL;
+	}
+
+	FT_Face *loadFontFaceFromMemory(const char unsigned *fileBase, int fileSize, int faceIndex) {
+		FT_Face *face = new FT_Face;
+		FT_Error error = FT_New_Memory_Face(library, fileBase, fileSize, faceIndex, face);
 		return error==FT_Err_Ok ? face : NULL;
 	}
 
 	void destroyFace(FT_Face *face) {
 		FT_Done_Face(*face);
-		//printf("free face\n");
 	}
 
 	// TODO: Improve this function.

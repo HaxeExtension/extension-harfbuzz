@@ -6,6 +6,7 @@ import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import extension.harfbuzz.OpenflHarbuzzCFFI;
 import extension.harfbuzz.TextScript;
+import openfl.Lib;
 
 class OpenflHarfbuzzRenderer {
 
@@ -45,17 +46,23 @@ class OpenflHarfbuzzRenderer {
 			OpenflHarbuzzCFFI.init();
 		}
 
-		face = OpenflHarbuzzCFFI.loadFontFaceFromFile(ttfPath);
+		face = OpenflHarbuzzCFFI.loadFontFaceFromMemory(openfl.Assets.getBytes(ttfPath).getData());
+
 		OpenflHarbuzzCFFI.setFontSize(face, textSize);
 
+		//var time = Lib.getTimer();
+		//trace("1 start");
+		
 		var glyphAtlasResult = OpenflHarbuzzCFFI.createGlyphAtlas(face, createBuffer(text));
 		var glyphsBmp = new BitmapData(glyphAtlasResult.width, glyphAtlasResult.height);
-		trace(glyphsBmp.width + " " + glyphsBmp.height);
+		
+		//trace("2 : " + (Lib.getTimer() - time));
+		//time = Lib.getTimer();
 
-		for (i in 0...glyphAtlasResult.bmpData.length) {
-			var pixel = glyphAtlasResult.bmpData[i];
-			glyphsBmp.setPixel32(i%glyphsBmp.width, Std.int(i/glyphsBmp.width), pixel);
-		}
+		glyphsBmp.setVector(new Rectangle(0, 0, glyphsBmp.width, glyphsBmp.height), glyphAtlasResult.bmpData);
+
+		//trace("3 : " + (Lib.getTimer() - time));
+		//time = Lib.getTimer();
 
 		glyphs = new Map();
 		var glyphsRects = new Array<{ codepoint : Int, rect : Rectangle }>();

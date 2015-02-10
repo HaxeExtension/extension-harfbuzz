@@ -33,6 +33,21 @@ static value openfl_harfbuzz_loadFontFaceFromFile(value filePath, value faceInde
 }
 DEFINE_PRIM(openfl_harfbuzz_loadFontFaceFromFile, 2);
 
+static value openfl_harfbuzz_loadFontFaceFromMemory(value bytes, value faceIndex) {
+	
+	buffer bBuffer = val_to_buffer(bytes);
+	FT_Face *ret = loadFontFaceFromMemory(
+		(const unsigned char *)buffer_data(bBuffer),
+		buffer_size(bBuffer),
+		val_int(faceIndex)
+	);
+	
+	value v = alloc_float((intptr_t)ret);
+	val_gc(v, openfl_harfbuzz_destroyFace);
+	return v;
+}
+DEFINE_PRIM(openfl_harfbuzz_loadFontFaceFromMemory, 2);
+
 static value openfl_harfbuzz_setFontSize(value faceHandle, value size) {
 	FT_Face *face = (FT_Face*)(intptr_t)val_float(faceHandle);
 	setFontSize(face, val_int(size));

@@ -137,7 +137,10 @@ namespace openfl_harfbuzz {
 		int yPos = 0;
 		int glyphIndex = 0;
 
-		for (auto codepoint : glyphsCodepoints) {
+		std::set<int>::iterator iter;
+		for (iter=glyphsCodepoints.begin(); iter!=glyphsCodepoints.end(); ++iter) {
+			
+			int codepoint = *iter;
 
 			if (FT_Load_Glyph(*face, codepoint, FT_LOAD_RENDER)!=FT_Err_Ok) {
 				printf("FT_Load_Glyph error, codepoint=%i\n", codepoint);

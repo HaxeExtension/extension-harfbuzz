@@ -156,7 +156,7 @@ class OpenflHarfbuzzRenderer {
 
 	}
 
-	public function renderText(text : String, lineWidth : Float, color : Int) : Sprite {
+	public function renderText(text : String, lineWidth : Float, color : Int) : HarfbuzzSprite {
 
 		text = preProcessText(text);
 

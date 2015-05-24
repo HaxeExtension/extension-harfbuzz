@@ -34,12 +34,11 @@ class TilesRenderer {
 		glyphList : Array<{ codepoint : Int, x : Float, y : Float }>,
 		colorR : Float,
 		colorG : Float,
-		colorB : Float ) : Sprite {
+		colorB : Float ) : HarfbuzzSprite {
 
-		var spr = new Sprite();
-		var gfx = spr.graphics;
 		blitList = [];
 		
+		var minY:Float=-1;
 		for (g in glyphList) {
 			blitList.push(g.x);
 			blitList.push(g.y);
@@ -47,18 +46,12 @@ class TilesRenderer {
 			blitList.push(colorR);
 			blitList.push(colorG);
 			blitList.push(colorB);
+			if(minY==-1 || minY>g.y) minY=g.y;
 		}
 		
-		gfx.clear();
-
-		tilesheet.drawTiles(gfx, blitList, true, Graphics.TILE_RGB);
-
-		gfx.beginFill(0, 0.0);
-		gfx.drawRect(0, 0, textWidth, textHeight);
-		gfx.endFill();
-
+		var spr = new HarfbuzzSprite(textWidth, textHeight+minY);
+		tilesheet.drawTiles(spr.graphics, blitList, true, Graphics.TILE_RGB);
 		return spr;
-
 	}
 
 }

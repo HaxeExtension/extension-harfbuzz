@@ -1,13 +1,12 @@
 {
   "name": "openfl-harfbuzz",
-  "url": "",
+  "url": "https://github.com/DanielUranga/openfl-harfbuzz",
   "license": "MIT",
-  "tags": [],
-  "description": "",
+  "tags": ["harfbuzz","text","openfl","lime","extension"],
+  "description": "Harfbuzz extension for Lime / OpenFL",
   "version": "1.0.0",
-  "releasenote": "",
-  "classPath": "src",
-  "contributors": [""],
+  "releasenote": "First release... working!",
+  "contributors": ["fbricker"],
   "dependencies": {
     "inthebox-macros": ""
   }

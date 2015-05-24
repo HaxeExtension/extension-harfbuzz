@@ -59,7 +59,10 @@ class OpenflHarfbuzzRenderer {
 		//trace("2 : " + (Lib.getTimer() - time));
 		//time = Lib.getTimer();
 
-		glyphsBmp.setVector(new Rectangle(0, 0, glyphsBmp.width, glyphsBmp.height), glyphAtlasResult.bmpData);
+		var rect = new Rectangle(0, 0, glyphsBmp.width, glyphsBmp.height);
+		var ct = new openfl.geom.ColorTransform(1,1,1,1,255,255,255,0);
+		glyphsBmp.setVector(rect, glyphAtlasResult.bmpData);
+		glyphsBmp.colorTransform(rect, ct);
 
 		//trace("3 : " + (Lib.getTimer() - time));
 		//time = Lib.getTimer();

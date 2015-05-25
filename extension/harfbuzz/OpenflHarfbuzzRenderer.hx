@@ -87,10 +87,12 @@ class OpenflHarfbuzzRenderer {
 		var ret = [];
 		var currentWord = "";
 		for (i in 0...text.length) {
-			currentWord+=text.charAt(i);
 			if (StringTools.isSpace(text, i)) {
-				ret.push(currentWord);
+				if(currentWord.length>0) ret.push(currentWord);
+				if(text.charAt(i)!="\r") ret.push(text.charAt(i));
 				currentWord = "";
+			} else {
+				currentWord+=text.charAt(i);				
 			}
 		}
 		if (currentWord.length>0) {
@@ -107,19 +109,10 @@ class OpenflHarfbuzzRenderer {
 		return xPos;
 	}
 
-	function renderWords(words : Array<String>) : Array<Array<PosInfo>> {
-		var ret = [];
-		for (word in words) {
-			ret.push(OpenflHarbuzzCFFI.layoutText(face, createBuffer(word)));
-		}
-		return ret;
-	}
-
 	function isEndOfLine(xPos : Float, wordWidth : Float, lineWidth : Float) {
 		if (direction == LeftToRight) {
 			return (xPos>0.0 && xPos+wordWidth>lineWidth);
-		}
-		else {	// RightToLeft
+		} else {	// RightToLeft
 			return (xPos<lineWidth&& xPos-wordWidth<0.0);
 		}
 	}
@@ -164,7 +157,7 @@ class OpenflHarfbuzzRenderer {
 		text = preProcessText(text);
 
 		var renderList = new Array<{ codepoint : Int, x : Float, y : Float }>();
-		var words = renderWords(split(text));
+		var words = split(text);
 
 		var lineNumber : Int = 1;
 		var maxLineWidth = 400;
@@ -174,23 +167,22 @@ class OpenflHarfbuzzRenderer {
 		var yPosBase : Float = lineNumber*lineHeight;
 
 		for (word in words) {
+			var renderedWord = OpenflHarbuzzCFFI.layoutText(face, createBuffer(word));
+			var wordWidth = layouWidth(renderedWord);
 
-			var wordWidth = layouWidth(word);
-
-			if (isEndOfLine(xPosBase, wordWidth, lineWidth)) {
-
+			if (word == "\n" || isEndOfLine(xPosBase, wordWidth, lineWidth)) {
 				// Newline
 				xPosBase = lineXStart;
 				lineNumber++;
 				yPosBase = lineNumber*lineHeight;
-
+				if(StringTools.isSpace(word,0)) continue;
 			}
 
 			var xPos = xPosBase;
 			if (direction==RightToLeft)	xPos-=wordWidth;
 			var yPos = yPosBase;
 
-			for (posInfo in word) {
+			for (posInfo in renderedWord) {
 
 				var g = glyphs[posInfo.codepoint];
 				var dstX = Std.int(xPos + posInfo.offset.x + g.bitmapLeft);

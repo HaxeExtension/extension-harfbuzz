@@ -172,8 +172,8 @@ class OpenflHarfbuzzRenderer {
 
 			if (word == "\n" || isEndOfLine(xPosBase, wordWidth, lineWidth)) {
 				// Newline
-				xPosBase = lineXStart;
 				lineNumber++;
+				xPosBase = lineXStart;
 				yPosBase = lineNumber*lineHeight;
 				if(StringTools.isSpace(word,0)) continue;
 			}
@@ -187,20 +187,22 @@ class OpenflHarfbuzzRenderer {
 				var g = glyphs[posInfo.codepoint];
 				var dstX = Std.int(xPos + posInfo.offset.x + g.bitmapLeft);
 				var dstY = Std.int(yPos + posInfo.offset.y - g.bitmapTop);
-				renderList.push({ codepoint : g.codepoint, x : dstX, y : dstY });
+				var avanceX = posInfo.advance.x / (100/64); // 100/64 = 1.5625 = Magic!
+				var avanceY = posInfo.advance.y / (100/64);
 
-				xPos += posInfo.advance.x / (100/64);	// 100/64 = 1.5625 = Magic!
-				yPos += posInfo.advance.y / (100/64);
-
-				if (xPos>lineWidth && direction==LeftToRight) {
-
+				if (xPos+avanceX>=lineWidth && direction==LeftToRight) {
 					// Newline
-					xPos = 0;
 					lineNumber++;
+					xPos = 0;
 					yPos = lineNumber*lineHeight;
-
+					dstX = Std.int(xPos + posInfo.offset.x + g.bitmapLeft);
+					dstY = Std.int(yPos + posInfo.offset.y - g.bitmapTop);
 				}
 
+				renderList.push({ codepoint : g.codepoint, x : dstX, y : dstY });
+
+				xPos += avanceX;
+				yPos += avanceY;
 			}
 
 			if (direction==LeftToRight) {

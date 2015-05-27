@@ -185,6 +185,13 @@ class OpenflHarfbuzzRenderer {
 			for (posInfo in renderedWord) {
 
 				var g = glyphs[posInfo.codepoint];
+				if(g==null) {
+					trace("WOW! I'm missing a glyph for the following word: "+word);
+					trace("This should not be happening! Your text will be renderer badly :(");
+					trace("CODEPINT "+posInfo.codepoint);
+					trace(posInfo);
+					continue;
+				}
 				var dstX = Std.int(xPos + posInfo.offset.x + g.bitmapLeft);
 				var dstY = Std.int(yPos + posInfo.offset.y - g.bitmapTop);
 				var avanceX = posInfo.advance.x / (100/64); // 100/64 = 1.5625 = Magic!

@@ -45,18 +45,20 @@ class ScriptIdentificator {
 		return ScriptCommon;
 	}
 
-	public static function identify(text : String) : TextScript {
+	public static function identify(text : String, preferredScript:String = null) : TextScript {
 		
 		var scriptsCount = new Map<String, Int>();
 		var utfLen = Utf8.length(text);
 		
 		scriptsCount[TextScript.ScriptCommon] = 0;
+		if(preferredScript!=null) scriptsCount[preferredScript] = 1;
+		
 		for (i in 0...utfLen) {
 			var char = new Utf8();
 			var charCode = Utf8.charCodeAt(text, i);
 			char.addChar(charCode);
 			var script = getCharCodeScript(charCode);
-			scriptsCount[script] = scriptsCount[script] == null ? 0 : scriptsCount[script]+1;
+			scriptsCount[script] = scriptsCount[script] == null ? 1 : scriptsCount[script]+1;
 		}
 
 		var mostCommonScript = TextScript.ScriptCommon;

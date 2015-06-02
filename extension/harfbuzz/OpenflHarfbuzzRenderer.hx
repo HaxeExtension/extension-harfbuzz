@@ -7,6 +7,7 @@ import openfl.geom.Rectangle;
 import extension.harfbuzz.OpenflHarbuzzCFFI;
 import extension.harfbuzz.TextScript;
 import openfl.Lib;
+import haxe.Utf8;
 
 class OpenflHarfbuzzRenderer {
 
@@ -82,21 +83,45 @@ class OpenflHarfbuzzRenderer {
 		return OpenflHarbuzzCFFI.createBuffer(direction, script, language, text);
 	}
 
+	function isPunctuation(char:String) {
+		return
+			char == '.' ||
+			char == ',' ||
+			char == ':' ||
+			char == ';' ||
+			char == '-' ||
+			char == '_' ||
+			char == '[' ||
+			char == ']' ||
+			char == '(' ||
+			char == ')';
+	}
+
+
+	private function isSpace(i:Int){
+		return i==9 || i==10 || i==11 || i==12 || i==13 || i==32;
+	}
+
 	// Splits text into words containging the trailing spaces ("a b c"=["a ", "b ", "c "])
 	function split(text : String) : Array<String> {
 		var ret = [];
-		var currentWord = "";
-		for (i in 0...text.length) {
-			if (StringTools.isSpace(text, i)) {
-				if(currentWord.length>0) ret.push(currentWord);
-				if(text.charAt(i)!="\r") ret.push(text.charAt(i));
-				currentWord = "";
-			} else {
-				currentWord+=text.charAt(i);				
+		var currentWord:Utf8 = null;
+		var l:Int = Utf8.length(text);
+		Utf8.iter(text,function(cCode:Int){
+			if (cCode==13) return;
+			if (isSpace(cCode)) {
+				if(currentWord != null) ret.push(currentWord.toString());
+				currentWord = new Utf8();
+				currentWord.addChar(cCode);
+				ret.push(currentWord.toString());
+				currentWord = null;
+				return;
 			}
-		}
-		if (currentWord.length>0) {
-			ret.push(currentWord);
+			if(currentWord==null) currentWord = new Utf8();
+			currentWord.addChar(cCode);		
+		});
+		if (currentWord != null) {
+			ret.push(currentWord.toString());
 		}
 		return ret;
 	}
@@ -117,39 +142,60 @@ class OpenflHarfbuzzRenderer {
 		}
 	}
 
+	private function invertString(s:String):String{
+		var l:Int = Utf8.length(s);
+		var res:Utf8 = new Utf8();
+		for(i in -l+1...1) res.addChar(Utf8.charCodeAt(s,-i));
+		return res.toString();
+	}
+
 	// if "text" is in RtoL script, invert non-RtoL substrings
 	function preProcessText(text : String) {
+		var isRtoL:Bool = TextScriptTools.isRightToLeft(script);
 
-		var generalTextIsRtoL = TextScriptTools.isRightToLeft(script);
-		var words = split(text);
-		var arr : Array<{text : String, invert : Bool}> = [{ text : "", invert : false }];
-		for (word in words) {
-			var shouldInvertCurrentWord = TextScriptTools.isRightToLeft(ScriptIdentificator.identify(word))!=generalTextIsRtoL;
-			var currentPhrase = arr[arr.length-1];
-			if (currentPhrase.invert==shouldInvertCurrentWord) {
-				currentPhrase.text += word;
-			} else {
-				arr.push({ text : word, invert : shouldInvertCurrentWord });
+		var res:StringBuf = new StringBuf();
+		var char:String = '';
+		var phrase:String = '';
+		var spaces:String = '';
+		var word:String = '';
+		var length:Int = text.length;
+
+		for(i in 0 ... length){
+			char = text.charAt(i);
+			if(char=="\r") continue;
+			if(isPunctuation(char) || StringTools.isSpace(text,i)) {
+				if(word == '') {
+					spaces += char;
+					continue;
+				}
+				if(char == "\n" || TextScriptTools.isRightToLeft(ScriptIdentificator.identify(word,script)) == isRtoL){
+					res.add(invertString(phrase));
+					res.add(spaces);
+					res.add(word);
+					res.add(char);
+					spaces = phrase = word = '';
+				} else {
+					if(phrase == '') {
+						res.add(spaces);
+						spaces = '';
+					}
+					phrase += spaces+word;
+					word = '';
+					spaces = char;
+				}
+				continue;
 			}
+			word+=char;
 		}
 
-		var ret = "";
-		for (a in arr) {
-			var phrase = a.text;
-			if (a.invert) {
-		    	var inverted = "";
-		    	var i = phrase.length;
-		    	while (i>0) {
-		    		i--;
-		    		inverted += phrase.charAt(i);
-		    	}
-		    	phrase = inverted;
-			}
-			ret += phrase;
+		if(word != '' && TextScriptTools.isRightToLeft(ScriptIdentificator.identify(word,script)) != isRtoL) {
+			phrase += spaces+word;
+			spaces = word = '';
 		}
-
-		return ret;
-
+		res.add(invertString(phrase));
+		res.add(spaces);
+		res.add(word);
+		return res.toString();
 	}
 
 	public function renderText(text : String, lineWidth : Float, color : Int) : HarfbuzzSprite {

@@ -149,6 +149,7 @@ class TextScriptTools {
 	public static function isRightToLeft(script : TextScript) : Bool {
 		return switch (script) {
 			case ScriptArabic:	true;
+			case ScriptHebrew:	true;
 			default:			false;
 		}
 	}

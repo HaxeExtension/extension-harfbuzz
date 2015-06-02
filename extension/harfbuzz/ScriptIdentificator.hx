@@ -28,6 +28,9 @@ class ScriptIdentificator {
 		new UnicodeBlock(0x0100, 0x017F, ScriptLatin),
 		new UnicodeBlock(0x0180, 0x024F, ScriptLatin),
 
+		// Hebrew
+		new UnicodeBlock(0x0590, 0x05FF, ScriptHebrew),
+
 		// Arabic
 		new UnicodeBlock(0x0600, 0x06ff, ScriptArabic),
 		new UnicodeBlock(0x0750, 0x077F, ScriptArabic),

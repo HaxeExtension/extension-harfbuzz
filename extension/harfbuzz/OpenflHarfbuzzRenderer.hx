@@ -1,13 +1,14 @@
 package extension.harfbuzz;
 
+import extension.harfbuzz.OpenflHarbuzzCFFI;
+import extension.harfbuzz.TextScript;
+import haxe.Utf8;
 import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
-import extension.harfbuzz.OpenflHarbuzzCFFI;
-import extension.harfbuzz.TextScript;
 import openfl.Lib;
-import haxe.Utf8;
+import openfl.utils.ByteArray;
 
 class OpenflHarfbuzzRenderer {
 
@@ -23,7 +24,7 @@ class OpenflHarfbuzzRenderer {
 	var glyphs : Map<Int, GlyphRect>;
 
 	public function new(
-			ttfPath : String,
+			fontName : String,	// Font path or Openfl Asset ID
 			textSize : Int,
 			text : String,
 			language : String = "",
@@ -47,26 +48,21 @@ class OpenflHarfbuzzRenderer {
 			OpenflHarbuzzCFFI.init();
 		}
 
-		face = OpenflHarbuzzCFFI.loadFontFaceFromMemory(openfl.Assets.getBytes(ttfPath).getData());
-
+		if (sys.FileSystem.exists(fontName)) {
+			face = OpenflHarbuzzCFFI.loadFontFaceFromFile(fontName);
+		} else {
+			face = OpenflHarbuzzCFFI.loadFontFaceFromMemory(openfl.Assets.getBytes(fontName).getData());
+		}
+		
 		OpenflHarbuzzCFFI.setFontSize(face, textSize);
 
-		//var time = Lib.getTimer();
-		//trace("1 start");
-		
 		var glyphAtlasResult = OpenflHarbuzzCFFI.createGlyphAtlas(face, createBuffer(text));
 		var glyphsBmp = new BitmapData(glyphAtlasResult.width, glyphAtlasResult.height);
-		
-		//trace("2 : " + (Lib.getTimer() - time));
-		//time = Lib.getTimer();
 
 		var rect = new Rectangle(0, 0, glyphsBmp.width, glyphsBmp.height);
 		var ct = new openfl.geom.ColorTransform(1,1,1,1,255,255,255,0);
 		glyphsBmp.setVector(rect, glyphAtlasResult.bmpData);
 		glyphsBmp.colorTransform(rect, ct);
-
-		//trace("3 : " + (Lib.getTimer() - time));
-		//time = Lib.getTimer();
 
 		glyphs = new Map();
 		var glyphsRects = new Array<{ codepoint : Int, rect : Rectangle }>();

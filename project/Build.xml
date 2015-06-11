@@ -31,6 +31,10 @@
 		<files id="common" />
 		<files id="native-toolkit-freetype" />
 		<files id="native-toolkit-harfbuzz" />
+
+		<section if="blackberry">
+			<lib name="-lc" />
+		</section>
 		
 	</target>
 	

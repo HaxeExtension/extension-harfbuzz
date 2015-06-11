@@ -1,25 +1,30 @@
 #include "openfl-harfbuzz.h"
 
 #include <algorithm>
-#include <set>
-#include <math.h>
-#include <sys/stat.h>
 #include <errno.h>
+#include <map>
+#include <math.h>
+#include <set>
+#include <sys/stat.h>
 
 #include <hx/CFFI.h>
 
 #include <ft2build.h>
+#include <hb-ft.h>
+#include <hb.h>
+#include FT_BITMAP_H
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
 #include FT_OUTLINE_H
-#include FT_BITMAP_H
 
-#include <hb.h>
-#include <hb-ft.h>
+using namespace std;
 
 namespace openfl_harfbuzz {
 
+	int initialized = 0;
 	FT_Library	library;
+	map<FT_Face, hb_font_t *> fontPool;
+	map<FT_Face, char unsigned *> faceMemoryPool;
 
 	static inline float	to_float(hb_position_t v) {
 	   return scalbnf(v, -12);
@@ -30,10 +35,24 @@ namespace openfl_harfbuzz {
 	}
 
 	static inline float i26_6_to_float(hb_position_t v) {
-		return scalbnf(v, -6);	
+		return scalbnf(v, -6);
+	}
+
+	hb_font_t *hb_ft_font_create_cached(FT_Face face) {
+		hb_font_t *ret;
+		map<FT_Face, hb_font_t *>::iterator it = fontPool.find(face);
+		if (it!=fontPool.end()) {
+			ret = it->second;
+		} else {
+			ret = hb_ft_font_create(face, NULL);
+			fontPool[face] = ret;
+		}
+		return ret;
 	}
 
 	void init() {
+		if(initialized != 0) return;
+		initialized = 1;
 		FT_Error error = FT_Init_FreeType(&library);
 		if (error!=FT_Err_Ok) {
 			throw "Error initializing FreeType";
@@ -43,19 +62,42 @@ namespace openfl_harfbuzz {
 	FT_Face *loadFontFaceFromFile(const char *filePath, int faceIndex) {
 		FT_Face *face = new FT_Face;
 		struct stat buffer;
-		if (stat(filePath, &buffer)!=0)	return (FT_Face*)errno;
+		if (stat(filePath, &buffer)!=0)	return (FT_Face*)(intptr_t)errno;
 		FT_Error error = FT_New_Face(library, filePath, faceIndex, face);
 		return error==FT_Err_Ok ? face : NULL;
 	}
 
 	FT_Face *loadFontFaceFromMemory(const char unsigned *fileBase, int fileSize, int faceIndex) {
+
 		FT_Face *face = new FT_Face;
-		FT_Error error = FT_New_Memory_Face(library, fileBase, fileSize, faceIndex, face);
+		char unsigned *faceData = (char unsigned *)malloc(fileSize);
+		memcpy(faceData, fileBase, fileSize);
+
+		FT_Error error = FT_New_Memory_Face(library, faceData, fileSize, faceIndex, face);
+
+		faceMemoryPool[*face] = faceData;
+
 		return error==FT_Err_Ok ? face : NULL;
+
 	}
 
 	void destroyFace(FT_Face *face) {
+
+		map<FT_Face, hb_font_t *>::iterator it = fontPool.find(*face);
+		if (it!=fontPool.end()) {
+			hb_font_destroy(it->second);
+			fontPool.erase(it);
+		}
+
+		FT_Face *tmp = face;
 		FT_Done_Face(*face);
+
+		map<FT_Face, char unsigned *>::iterator it2 = faceMemoryPool.find(*tmp);
+		if (it2!=faceMemoryPool.end()) {
+			free(it2->second);
+			faceMemoryPool.erase(it2);
+		}
+
 	}
 
 	// TODO: Improve this function.
@@ -73,8 +115,13 @@ namespace openfl_harfbuzz {
 		FT_Set_Transform(*face, &matrix, NULL);
 	}
 
+	hb_buffer_t *buffer;
 	hb_buffer_t *createBuffer(hb_tag_t direction, const char *script, const char *language, const char *text) {
-		hb_buffer_t *buffer = hb_buffer_create();
+		if (buffer==NULL) {
+			buffer = hb_buffer_create();
+		} else {
+			hb_buffer_reset(buffer);
+		}
 		hb_buffer_set_direction(buffer, (hb_direction_t)direction);
 		hb_buffer_set_script(buffer, hb_script_from_string(script, -1));
 		hb_buffer_set_language(buffer, hb_language_from_string(language, -1));
@@ -83,8 +130,7 @@ namespace openfl_harfbuzz {
 	}
 
 	void destroyBuffer(hb_buffer_t *buffer) {
-		hb_buffer_destroy(buffer);
-		//printf("free buffer\n");
+		//hb_buffer_destroy(buffer);
 	}
 
 	/**
@@ -92,7 +138,9 @@ namespace openfl_harfbuzz {
 	 */
 	value createGlyphAtlas(FT_Face *face, hb_buffer_t *buffer) {
 
-		hb_font_t *hbFont = hb_ft_font_create(*face, NULL);
+		//hb_font_t *hbFont = hb_ft_font_create(*face, NULL);
+		hb_font_t *hbFont = hb_ft_font_create_cached(*face);
+
 		hb_shape(hbFont, buffer, NULL, 0);
 
 		unsigned int glyph_count;
@@ -101,7 +149,7 @@ namespace openfl_harfbuzz {
 		// First pass, get glyphs sizes
 		int maxGlyphWidth = -1;
 		int maxGlyphHeight = -1;
-		std::set<int> glyphsCodepoints;
+		set<int> glyphsCodepoints;
 		int uniqueGlyphs = 0;
 		for (int i = 0; i<glyph_count; i++) {
 
@@ -119,8 +167,8 @@ namespace openfl_harfbuzz {
 			glyphsCodepoints.insert(codepoint);
 			++uniqueGlyphs;
 
-			maxGlyphWidth = std::max(maxGlyphWidth, (*face)->glyph->bitmap.width);
-			maxGlyphHeight = std::max(maxGlyphHeight, (*face)->glyph->bitmap.rows);
+			maxGlyphWidth = max(maxGlyphWidth, (*face)->glyph->bitmap.width);
+			maxGlyphHeight = max(maxGlyphHeight, (*face)->glyph->bitmap.rows);
 
 		}
 
@@ -146,9 +194,9 @@ namespace openfl_harfbuzz {
 		int yPos = 0;
 		int glyphIndex = 0;
 
-		std::set<int>::iterator iter;
+		set<int>::iterator iter;
 		for (iter=glyphsCodepoints.begin(); iter!=glyphsCodepoints.end(); ++iter) {
-			
+
 			int codepoint = *iter;
 
 			if (FT_Load_Glyph(*face, codepoint, FT_LOAD_RENDER)!=FT_Err_Ok) {
@@ -197,7 +245,7 @@ namespace openfl_harfbuzz {
 
 		}
 
-		hb_font_destroy(hbFont);
+		//hb_font_destroy(hbFont);
 
 		// hxcffi
 		alloc_field(obj, val_id("bmpData"), glyphAtlas);
@@ -214,7 +262,8 @@ namespace openfl_harfbuzz {
 	 */
 	value layoutText(FT_Face *face, hb_buffer_t *buffer) {
 
-		hb_font_t *hbFont = hb_ft_font_create(*face, NULL);
+		hb_font_t *hbFont = hb_ft_font_create_cached(*face);
+
 		hb_shape(hbFont, buffer, NULL, 0);
 
 		unsigned int glyph_count;
@@ -245,7 +294,7 @@ namespace openfl_harfbuzz {
 
 		}
 
-		hb_font_destroy (hbFont);
+		//hb_font_destroy(hbFont);
 
 		return posInfo;
 	}

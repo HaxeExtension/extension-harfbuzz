@@ -46,6 +46,7 @@ class OpenflHarfbuzzRenderer {
 
 		if (!harfbuzzIsInited) {
 			OpenflHarbuzzCFFI.init();
+			harfbuzzIsInited = true;
 		}
 
 		if (sys.FileSystem.exists(fontName)) {
@@ -53,7 +54,7 @@ class OpenflHarfbuzzRenderer {
 		} else {
 			face = OpenflHarbuzzCFFI.loadFontFaceFromMemory(openfl.Assets.getBytes(fontName).getData());
 		}
-		
+
 		OpenflHarbuzzCFFI.setFontSize(face, textSize);
 
 		var glyphAtlasResult = OpenflHarbuzzCFFI.createGlyphAtlas(face, createBuffer(text));
@@ -114,7 +115,7 @@ class OpenflHarfbuzzRenderer {
 				return;
 			}
 			if(currentWord==null) currentWord = new Utf8();
-			currentWord.addChar(cCode);		
+			currentWord.addChar(cCode);
 		});
 		if (currentWord != null) {
 			ret.push(currentWord.toString());

@@ -19,6 +19,8 @@ namespace openfl_harfbuzz {
 	value createGlyphAtlas(FT_Face *face, hb_buffer_t *buffer);
 	value layoutText(FT_Face *face, hb_buffer_t *buffer);
 	value getFaceMetrics(FT_Face *face);
+
+	void log(const char *msg);
 	
 }
 

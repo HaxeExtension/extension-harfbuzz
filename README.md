@@ -1,4 +1,4 @@
-# openfl-harfbuzz
+# extension-harfbuzz
 Native Harfbuzz based OpenFL extension for text rendering
 
 Example:

@@ -1,6 +1,6 @@
 {
-  "name": "openfl-harfbuzz",
-  "url": "https://github.com/DanielUranga/openfl-harfbuzz",
+  "name": "extension-harfbuzz",
+  "url": "https://github.com/DanielUranga/extension-harfbuzz",
   "license": "MIT",
   "tags": ["harfbuzz","text","openfl","lime","extension"],
   "description": "Harfbuzz extension for Lime / OpenFL",

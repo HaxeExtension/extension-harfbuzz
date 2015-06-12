@@ -172,8 +172,8 @@ namespace openfl_harfbuzz {
 
 		}
 
-		maxGlyphWidth++;	// Margin
-		maxGlyphHeight++;	// Margin
+		maxGlyphWidth+=2;	// Margin
+		maxGlyphHeight+=2;	// Margin
 
 		int rowCols = ceil(sqrt(uniqueGlyphs));
 		int minBmpWidth = rowCols*maxGlyphWidth;

@@ -1,5 +1,5 @@
 # extension-harfbuzz
-Native Harfbuzz based OpenFL extension for text rendering
+Native Harfbuzz extension for text rendering on Lime Legacy & NME.
 
 Example:
 ```haxe

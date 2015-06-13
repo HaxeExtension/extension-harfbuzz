@@ -115,7 +115,7 @@ namespace openfl_harfbuzz {
 		FT_Set_Transform(*face, &matrix, NULL);
 	}
 
-	hb_buffer_t *buffer;
+	hb_buffer_t *buffer = NULL;
 	hb_buffer_t *createBuffer(hb_tag_t direction, const char *script, const char *language, const char *text) {
 		if (buffer==NULL) {
 			buffer = hb_buffer_create();

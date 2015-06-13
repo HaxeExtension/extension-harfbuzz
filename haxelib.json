@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["harfbuzz","text","openfl","lime","extension"],
   "description": "Harfbuzz extension for Lime / OpenFL",
-  "version": "1.0.0",
-  "releasenote": "First release... working!",
+  "version": "1.0.1",
+  "releasenote": "Added Blackberry target",
   "contributors": ["fbricker"],
   "dependencies": {
     "inthebox-macros": ""

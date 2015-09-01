@@ -27,15 +27,15 @@ namespace openfl_harfbuzz {
 	map<FT_Face, char unsigned *> faceMemoryPool;
 
 	static inline float	to_float(hb_position_t v) {
-	   return scalbnf(v, -12);
+		return (v>>12) + (0xfff&v)/0xfff;
 	}
 
 	static inline float i16_16_to_float(hb_position_t v) {
-		return scalbnf(v, -16);
+		return (v>>16) + (0xffff&v)/0xffff;
 	}
 
 	static inline float i26_6_to_float(hb_position_t v) {
-		return scalbnf(v, -6);
+		return (v>>6) + (0x3f&v)/0x3f;
 	}
 
 	hb_font_t *hb_ft_font_create_cached(FT_Face face) {
@@ -175,7 +175,7 @@ namespace openfl_harfbuzz {
 		maxGlyphWidth+=2;	// Margin
 		maxGlyphHeight+=2;	// Margin
 
-		int rowCols = ceil(sqrt(uniqueGlyphs));
+		int rowCols = ceil(sqrt(static_cast<double>(uniqueGlyphs)));
 		int minBmpWidth = rowCols*maxGlyphWidth;
 		int minBmpHeight = rowCols*maxGlyphHeight;
 

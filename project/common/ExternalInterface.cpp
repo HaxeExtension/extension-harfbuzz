@@ -9,7 +9,6 @@
 #include "openfl-harfbuzz.h"
 #include <ft2build.h>
 #include <hx/CFFI.h>
-#include <hxcpp.h>
 #include FT_FREETYPE_H
 
 using namespace openfl_harfbuzz;

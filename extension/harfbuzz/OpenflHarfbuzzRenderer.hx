@@ -26,6 +26,7 @@ class OpenflHarfbuzzRenderer {
 	public function new(
 			fontName : String,	// Font path or Openfl Asset ID
 			textSize : Int,
+			color: Int,
 			text : String,
 			language : String = "",
 			script : TextScript = null,
@@ -61,8 +62,12 @@ class OpenflHarfbuzzRenderer {
 		var glyphsBmp = new BitmapData(glyphAtlasResult.width, glyphAtlasResult.height);
 
 		var rect = new Rectangle(0, 0, glyphsBmp.width, glyphsBmp.height);
-		var ct = new openfl.geom.ColorTransform(1,1,1,1,255,255,255,0);
 		glyphsBmp.setVector(rect, glyphAtlasResult.bmpData);
+		var ct = new openfl.geom.ColorTransform(
+			((color>>16)&0xff)/255.0,
+			((color>>8)&0xff)/255.0,
+			(color&0xff)/255.0,
+			1,0,0,0,0);
 		glyphsBmp.colorTransform(rect, ct);
 
 		glyphs = new Map();
@@ -195,7 +200,7 @@ class OpenflHarfbuzzRenderer {
 		return res.toString();
 	}
 
-	public function renderText(text : String, lineWidth : Float, color : Int) : HarfbuzzSprite {
+	public function renderText(text : String, lineWidth : Float) : HarfbuzzSprite {
 
 		text = preProcessText(text);
 
@@ -263,7 +268,7 @@ class OpenflHarfbuzzRenderer {
 
 		}
 
-		return renderer.render(lineWidth, (lineNumber)*lineHeight, renderList, ((color>>16)&0xff)/255.0, ((color>>8)&0xff)/255.0, (color&0xff)/255.0);
+		return renderer.render(lineWidth, (lineNumber)*lineHeight, renderList);
 
 	}
 

@@ -2,4 +2,6 @@
 <project>
 	<ndll name="openfl_harfbuzz" />
 	<haxelib name="inthebox-macros" />
+	<classpath name="src" unless="openfl-legacy || openfl-next" />
+	<classpath name="src-legacy" if="openfl-legacy || openfl-next" />
 </project>

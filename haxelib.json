@@ -4,8 +4,8 @@
   "license": "MIT",
   "tags": ["harfbuzz","text","openfl","lime","extension"],
   "description": "Harfbuzz extension for Lime / OpenFL",
-  "version": "1.0.3",
-  "releasenote": "Fix NDLL / Blackberry target",
+  "version": "1.2.0",
+  "releasenote": "Add compatibility for OpenFL 3.6.1 and 4.X + include HarfbuzzText class",
   "contributors": ["fbricker"],
   "dependencies": {
     "inthebox-macros": ""

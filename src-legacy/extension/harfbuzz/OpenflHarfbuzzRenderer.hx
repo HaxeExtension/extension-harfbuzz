@@ -53,7 +53,11 @@ class OpenflHarfbuzzRenderer {
 		if (sys.FileSystem.exists(fontName)) {
 			face = OpenflHarbuzzCFFI.loadFontFaceFromFile(fontName);
 		} else {
+			#if (!openfl_next)
 			face = OpenflHarbuzzCFFI.loadFontFaceFromMemory(openfl.Assets.getBytes(fontName).getData());
+			#else
+			face = OpenflHarbuzzCFFI.loadFontFaceFromMemory(openfl.Assets.getBytes(fontName));
+			#end
 		}
 
 		OpenflHarbuzzCFFI.setFontSize(face, textSize);

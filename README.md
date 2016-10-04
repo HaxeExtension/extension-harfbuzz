@@ -71,7 +71,7 @@ function placeText() {
 	var align = HarfbuzzText.LEFT;
 	var quality = 1;
 
-	var label=new HarfbuzzText(FONT, size, color, align, quality);
+	var label=new HarfbuzzText(font, size, color, align, quality);
 	label.width = 400;
 	label.text = 'Hello world!';
 

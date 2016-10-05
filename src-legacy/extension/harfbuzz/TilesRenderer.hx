@@ -46,6 +46,9 @@ class TilesRenderer {
 			blitList.push(g.x);
 			blitList.push(g.y);
 			blitList.push(glyphIds[g.codepoint]);
+			blitList.push(1);
+			blitList.push(1);
+			blitList.push(1);
 			var rect = glyphRects[g.codepoint];
 			if(minY>g.y) minY=g.y;
 			if(minX>g.x) minX=g.x;
